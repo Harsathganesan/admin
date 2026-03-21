@@ -13,8 +13,10 @@ import './styles/index.css';
 
 // Initialize Socket.io (Dynamic URL for mobile access)
 // Initialize Socket.io (Dynamic URL for local and production)
-const SOCKET_URL = window.location.hostname === 'localhost' 
-  ? `http://${window.location.hostname}:5005` 
+// Initialize Socket.io (Dynamic URL for local and production)
+// Initialize Socket.io (Point to port 5005 if in development, otherwise same origin)
+const SOCKET_URL = window.location.port && window.location.port !== '5005'
+  ? `${window.location.protocol}//${window.location.hostname}:5005`
   : window.location.origin;
 
 const socket = io(SOCKET_URL, {

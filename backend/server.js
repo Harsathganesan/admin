@@ -135,6 +135,10 @@ mongoose.connection.on('error', (err) => {
 // Socket.io
 io.on('connection', (socket) => console.log('Client connected:', socket.id));
 
+// Serve frontend static files
+const buildPath = path.join(__dirname, '../build');
+app.use(express.static(buildPath));
+
 // API Routes
 app.get('/api/orders', async (req, res) => {
   try { res.json(await Order.find().sort({ createdAt: -1 })); }
@@ -183,6 +187,15 @@ app.get('/api/download-image', async (req, res) => {
     console.error('Download API Error:', err);
     res.status(500).send('Download error');
   }
+});
+
+// Catch-all route for React (SPA)
+app.get('*all', (req, res) => {
+  // If request is for an API that doesn't exist, don't return index.html
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ message: 'API Route Not Found' });
+  }
+  res.sendFile(path.join(buildPath, 'index.html'));
 });
 
 // Start server only if not running in Vercel environment

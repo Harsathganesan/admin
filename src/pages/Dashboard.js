@@ -160,9 +160,47 @@ const Dashboard = ({ orders = [] }) => {
       <div style={{ marginTop: '2rem', display: 'grid', gap: '1.5rem', width: '100%', boxSizing: 'border-box' }}>
         
         <div style={cardStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-            <TrendingUp size={24} color="var(--primary)" />
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Performance Analysis</h2>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <TrendingUp size={24} color="#6366f1" />
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Performance Analysis</h2>
+            </div>
+            <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '12px' }}>
+              <button 
+                onClick={() => setViewType('monthly')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  background: viewType === 'monthly' ? '#ffffff' : 'transparent',
+                  color: viewType === 'monthly' ? '#6366f1' : '#64748b',
+                  boxShadow: viewType === 'monthly' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Monthly
+              </button>
+              <button 
+                onClick={() => setViewType('yearly')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  background: viewType === 'yearly' ? '#ffffff' : 'transparent',
+                  color: viewType === 'yearly' ? '#6366f1' : '#64748b',
+                  boxShadow: viewType === 'yearly' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Yearly
+              </button>
+            </div>
           </div>
           <div style={{ width: '100%', height: 320, minWidth: '100px', minHeight: '100px', display: 'flex' }}>
             {mounted && chartData.length > 0 && (

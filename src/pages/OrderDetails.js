@@ -36,7 +36,7 @@ const OrderDetails = ({ orders, onUpdateStatus }) => {
     const filename = `${order.customerName}_reference.jpg`.replace(/\s+/g, '_');
     
     try {
-      const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:5005' : window.location.origin;
+      const backendUrl = window.location.origin;
       const downloadUrl = `${backendUrl}/api/download-image?fullUrl=${encodeURIComponent(imageUrl)}&downloadName=${encodeURIComponent(filename)}`;
       
       const link = document.createElement('a');

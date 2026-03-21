@@ -17,7 +17,7 @@ const Settings = () => {
   useEffect(() => {
     const checkServer = async () => {
       try {
-        const res = await fetch(`http://${window.location.hostname}:5005/api/orders`);
+        const res = await fetch('/api/orders');
         if (res.ok) {
           setServerStatus('Online');
           setDbStatus('Connected');
