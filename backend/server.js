@@ -22,11 +22,20 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', cors(), express.static(path.join(__dirname, 'uploads')));
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (Only if NOT on Vercel to avoid Read-Only Filesystem error)
 const fs = require('fs');
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
+if (!process.env.VERCEL) {
+    const uploadDir = path.join(__dirname, 'uploads');
+    try {
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir);
+            console.log('✅ Created uploads directory');
+        }
+    } catch (err) {
+        console.warn('⚠️ Could not create uploads directory:', err.message);
+    }
+} else {
+    console.log('☁️ Running on Vercel Environment (Read-Only FS)');
 }
 
 // Schemas & Models
@@ -71,6 +80,10 @@ const connectDB = async (retryCount = 0) => {
   const RETRY_DELAY = 5000; // 5 seconds
 
   try {
+    if (!process.env.MONGODB_URI) {
+        console.error('❌ MONGODB_URI is MISSING in environment variables!');
+        return;
+    }
     await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
     console.log('✅ Connected to MongoDB Atlas: Drawing');
     
