@@ -39,9 +39,14 @@ function App() {
       setLoading(true);
       console.log('Fetching initial data...');
       
+      const token = localStorage.getItem('token');
       const [ordersRes, fbRes] = await Promise.all([
-        fetch(`${SOCKET_URL}/api/orders`),
-        fetch(`${SOCKET_URL}/api/feedbacks`)
+        fetch(`${SOCKET_URL}/api/orders`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${SOCKET_URL}/api/feedbacks`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
       ]);
 
       const ordersData = await ordersRes.json();
@@ -58,26 +63,28 @@ function App() {
   };
 
   useEffect(() => {
-    fetchData();
+    if (isAuthenticated) {
+      fetchData();
 
-    // SETUP SOCKET LISTENERS for real-time updates
-    socket.on('connect', () => {
-      console.log('Connected to real-time server');
-    });
+      // SETUP SOCKET LISTENERS for real-time updates
+      socket.on('connect', () => {
+        console.log('Connected to real-time server');
+      });
 
-    socket.on('ordersUpdated', (updatedOrders) => {
-      console.log('REAL-TIME UPDATE: Orders updated!', updatedOrders);
-      setOrders(updatedOrders);
-    });
+      socket.on('ordersUpdated', (updatedOrders) => {
+        console.log('REAL-TIME UPDATE: Orders updated!', updatedOrders);
+        setOrders(updatedOrders);
+      });
 
-    socket.on('feedbacksUpdated', (updatedFeedbacks) => {
-      console.log('REAL-TIME UPDATE: Feedbacks updated!', updatedFeedbacks);
-      setFeedbacks(updatedFeedbacks);
-    });
+      socket.on('feedbacksUpdated', (updatedFeedbacks) => {
+        console.log('REAL-TIME UPDATE: Feedbacks updated!', updatedFeedbacks);
+        setFeedbacks(updatedFeedbacks);
+      });
 
-    socket.on('disconnect', () => {
-      console.log('Disconnected from real-time server');
-    });
+      socket.on('disconnect', () => {
+        console.log('Disconnected from real-time server');
+      });
+    }
 
     // Cleanup on unmount
     return () => {
@@ -86,7 +93,7 @@ function App() {
       socket.off('connect');
       socket.off('disconnect');
     };
-  }, []);
+  }, [isAuthenticated]);
 
   const sendWhatsAppMessage = (order, status) => {
     // Get phone number from order
@@ -112,10 +119,12 @@ function App() {
 
   const handleUpdateStatus = async (id, newStatus) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${SOCKET_URL}/api/orders/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -152,6 +161,7 @@ function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('token');
   };
 
   return (

@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
@@ -56,7 +57,7 @@ const orderSchema = new mongoose.Schema({
   orderDate: { type: String, default: () => new Date().toISOString() }
 }, { collection: 'orders', timestamps: true });
 
-const Order = mongoose.model('Order', orderSchema);
+const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);
 
 const feedbackSchema = new mongoose.Schema({
   name: String,
@@ -65,13 +66,12 @@ const feedbackSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }, { collection: 'fb', timestamps: true });
 
-const Feedback = mongoose.model('Feedback', feedbackSchema);
+const Feedback = mongoose.models.Feedback || mongoose.model('Feedback', feedbackSchema);
 
 // MongoDB Config Options
 const mongooseOptions = {
-  serverSelectionTimeoutMS: 10000, // Increased timeout for better stability
-  socketTimeoutMS: 45000,
-  family: 4 // Use IPv4
+  serverSelectionTimeoutMS: 15000, // More time for cloud connection
+  socketTimeoutMS: 45000
 };
 
 // MongoDB Connection with Retry Logic
@@ -87,8 +87,12 @@ const connectDB = async (retryCount = 0) => {
     await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
     console.log('✅ Connected to MongoDB Atlas: Drawing');
     
-    // Set up change streams once connected
-    setupChangeStreams();
+    // Set up change streams once connected (but only if NOT on Vercel)
+    if (!process.env.VERCEL) {
+        setupChangeStreams();
+    } else {
+        console.log('☁️ Skipping Change Streams on Vercel');
+    }
   } catch (err) {
     console.error(`❌ MongoDB Connection Error (Attempt ${retryCount + 1}/${MAX_RETRIES}):`, err.message);
     
@@ -154,18 +158,45 @@ if (!process.env.VERCEL) {
   app.use(express.static(buildPath));
 }
 
-// API Routes
-app.get('/api/orders', async (req, res) => {
+// Authentication Middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) return res.status(401).json({ message: 'No token provided' });
+
+  jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, user) => {
+    if (err) return res.status(403).json({ message: 'Invalid or expired token' });
+    req.user = user;
+    next();
+  });
+};
+
+// Login Route
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  // Use the admin credentials specified by user: harsatharts9 / admin123
+  if (username === 'harsatharts9' && password === 'admin123') {
+    const token = jwt.sign({ username }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '24h' });
+    return res.json({ success: true, token });
+  }
+  
+  res.status(401).json({ success: false, message: 'Invalid credentials' });
+});
+
+// API Routes (Protected)
+app.get('/api/orders', authenticateToken, async (req, res) => {
   try { res.json(await Order.find().sort({ createdAt: -1 })); }
   catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-app.get('/api/feedbacks', async (req, res) => {
+app.get('/api/feedbacks', authenticateToken, async (req, res) => {
   try { res.json(await Feedback.find().sort({ createdAt: -1 })); }
   catch (err) { res.status(500).json({ message: err.message }); }
 });
 
-app.patch('/api/orders/:id', async (req, res) => {
+app.patch('/api/orders/:id', authenticateToken, async (req, res) => {
   try { res.json(await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })); }
   catch (err) { res.status(400).json({ message: err.message }); }
 });

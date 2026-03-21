@@ -6,15 +6,33 @@ const Login = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // For demo purposes, we'll use a hardcoded admin check
-    // The user mentioned "harsatharts9" as the admin name
-    if (username === 'harsatharts9' && password === 'admin123') {
-      onLogin(true);
-      localStorage.setItem('isAuthenticated', 'true');
-    } else {
-      setError('Invalid username or password');
+    setError('');
+
+    // Determine API URL (same logic as App.js)
+    const API_BASE = window.location.port && window.location.port !== '5005'
+      ? `${window.location.protocol}//${window.location.hostname}:5005`
+      : window.location.origin;
+
+    try {
+      const response = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('token', data.token);
+        onLogin(true);
+      } else {
+        setError(data.message || 'Invalid username or password');
+      }
+    } catch (err) {
+      setError('Connection error. Please check your backend.');
     }
   };
 
