@@ -1,0 +1,122 @@
+export const dummyOrders = [
+  {
+    id: "ORD-001",
+    fullName: "Anusha Sharma",
+    email: "anusha@example.com",
+    phoneNumber: "9876543210",
+    drawingType: "Pencil Sketch",
+    size: "A4",
+    price: 999,
+    status: "Pending",
+    orderDate: "2026-03-10",
+    imagePlaceholder: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop"
+  },
+  {
+    id: "ORD-002",
+    fullName: "Rahul Verma",
+    email: "rahul@example.com",
+    phoneNumber: "9123456789",
+    drawingType: "Pencil Sketch",
+    size: "A3",
+    price: 1499,
+    status: "Accepted",
+    orderDate: "2026-03-12",
+    imagePlaceholder: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&h=400&fit=crop"
+  },
+  {
+    id: "ORD-003",
+    fullName: "Priya Das",
+    email: "priya@example.com",
+    phoneNumber: "9988776655",
+    drawingType: "Pencil Sketch",
+    size: "A4",
+    price: 999,
+    status: "Declined",
+    orderDate: "2026-03-13",
+    imagePlaceholder: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=400&h=400&fit=crop"
+  },
+  {
+    id: "ORD-004",
+    fullName: "Siddharth Malhotra",
+    email: "sid@example.com",
+    phoneNumber: "8877665544",
+    drawingType: "Pencil Sketch",
+    size: "A2",
+    price: 2499,
+    status: "Pending",
+    orderDate: "2026-03-14",
+    imagePlaceholder: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=400&h=400&fit=crop"
+  },
+  {
+    id: "ORD-005",
+    fullName: "Sneha Kapoor",
+    email: "sneha@example.com",
+    phoneNumber: "7766554433",
+    drawingType: "Pencil Sketch",
+    size: "A4",
+    price: 999,
+    status: "Accepted",
+    orderDate: "2026-03-15",
+    imagePlaceholder: "https://images.unsplash.com/photo-1525875975471-999f65706aef?w=400&h=400&fit=crop"
+  },
+  {
+    id: "ORD-006",
+    fullName: "Arjun Reddy",
+    email: "arjun@example.com",
+    phoneNumber: "6655443322",
+    drawingType: "Pencil Sketch",
+    size: "A3",
+    price: 1499,
+    status: "Pending",
+    orderDate: "2026-03-15",
+    imagePlaceholder: "https://images.unsplash.com/photo-1581022295087-35e593704911?w=400&h=400&fit=crop"
+  },
+  {
+    id: "ORD-007",
+    fullName: "Meera Iyer",
+    email: "meera@example.com",
+    phoneNumber: "9900990099",
+    drawingType: "Pencil Sketch",
+    size: "A4",
+    price: 999,
+    status: "Accepted",
+    orderDate: "2026-03-16",
+    imagePlaceholder: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=400&h=400&fit=crop"
+  },
+  {
+    id: "ORD-008",
+    fullName: "Vikram Singh",
+    email: "vikram@example.com",
+    phoneNumber: "8811881188",
+    drawingType: "Pencil Sketch",
+    size: "A2",
+    price: 2499,
+    status: "Pending",
+    orderDate: "2026-03-16",
+    imagePlaceholder: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400&h=400&fit=crop"
+  },
+  {
+    id: "ORD-009",
+    fullName: "Kavya Menon",
+    email: "kavya@example.com",
+    phoneNumber: "7722772277",
+    drawingType: "Pencil Sketch",
+    size: "A4",
+    price: 999,
+    status: "Declined",
+    orderDate: "2026-03-17",
+    imagePlaceholder: "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400&h=400&fit=crop"
+  },
+  {
+    id: "ORD-010",
+    fullName: "Rohan Gupta",
+    email: "rohan@example.com",
+    phoneNumber: "6633663366",
+    drawingType: "Pencil Sketch",
+    size: "A3",
+    price: 1499,
+    status: "Pending",
+    orderDate: "2026-03-17",
+    imagePlaceholder: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop"
+  }
+];
