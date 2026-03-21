@@ -20,10 +20,7 @@
       "destination": "/backend/server.js"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!api|socket.io|static|uploads|favicon.ico|manifest.json|logo).*)$",
       "destination": "/index.html"
     }
   ]
