@@ -20,7 +20,11 @@
       "destination": "/backend/server.js"
     },
     {
-      "source": "/((?!api|socket.io|static|uploads|favicon.ico|manifest.json|logo).*)$",
+      "source": "/(.*\\..*)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
