@@ -164,9 +164,9 @@ const Dashboard = ({ orders = [] }) => {
             <TrendingUp size={24} color="var(--primary)" />
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Performance Analysis</h2>
           </div>
-          <div style={{ width: '100%', height: 320, minWidth: 0, minHeight: 0 }}>
-            {mounted && (
-              <ResponsiveContainer width="99%" height="100%">
+          <div style={{ width: '100%', height: 320, minWidth: '100px', minHeight: '100px', display: 'flex' }}>
+            {mounted && chartData.length > 0 && (
+              <ResponsiveContainer width="100%" height="100%" debounce={1}>
                 <BarChart data={chartData} margin={{ left: -20, right: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}} />
@@ -187,9 +187,9 @@ const Dashboard = ({ orders = [] }) => {
               <LayoutGrid size={24} color="#6366f1" />
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Size Distribution</h3>
             </div>
-            <div style={{ width: '100%', height: 350, minWidth: 0, minHeight: 0 }}>
-              {mounted && (
-                <ResponsiveContainer width="99%" height="100%">
+            <div style={{ width: '100%', height: 350, minWidth: '100px', minHeight: '100px', display: 'flex' }}>
+              {mounted && preferences.sizes.length > 0 && (
+                <ResponsiveContainer width="100%" height="100%" debounce={1}>
                   <PieChart margin={{ left: 40, right: 40 }}> {/* Added lateral margins for mobile labels */}
                     <Pie 
                       activeIndex={activeSize}
@@ -217,9 +217,9 @@ const Dashboard = ({ orders = [] }) => {
               <Palette size={24} color="#ec4899" />
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Artwork Insights</h3>
             </div>
-            <div style={{ width: '100%', height: 350, minWidth: 0, minHeight: 0 }}>
-              {mounted && (
-                <ResponsiveContainer width="99%" height="100%">
+            <div style={{ width: '100%', height: 350, minWidth: '100px', minHeight: '100px', display: 'flex' }}>
+              {mounted && preferences.types.length > 0 && (
+                <ResponsiveContainer width="100%" height="100%" debounce={1}>
                   <PieChart margin={{ left: 40, right: 40 }}> {/* Added lateral margins for mobile labels */}
                     <Pie 
                       activeIndex={activeType}
