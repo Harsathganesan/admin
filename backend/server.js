@@ -185,4 +185,10 @@ app.get('/api/download-image', async (req, res) => {
   }
 });
 
-server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+// Start server only if not running in Vercel environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+}
+
+// Export for Vercel
+module.exports = app;

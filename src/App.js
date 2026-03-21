@@ -12,8 +12,15 @@ import Settings from './pages/Settings';
 import './styles/index.css';
 
 // Initialize Socket.io (Dynamic URL for mobile access)
-const SOCKET_URL = `http://${window.location.hostname}:5005`;
-const socket = io(SOCKET_URL);
+// Initialize Socket.io (Dynamic URL for local and production)
+const SOCKET_URL = window.location.hostname === 'localhost' 
+  ? `http://${window.location.hostname}:5005` 
+  : window.location.origin;
+
+const socket = io(SOCKET_URL, {
+  path: '/socket.io/',
+  transports: ['polling', 'websocket'] // Vercel prefers polling initially
+});
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
