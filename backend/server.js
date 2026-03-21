@@ -137,7 +137,9 @@ io.on('connection', (socket) => console.log('Client connected:', socket.id));
 
 // Serve frontend static files
 const buildPath = path.join(__dirname, '../build');
-app.use(express.static(buildPath));
+if (!process.env.VERCEL) {
+  app.use(express.static(buildPath));
+}
 
 // API Routes
 app.get('/api/orders', async (req, res) => {
@@ -195,6 +197,12 @@ app.get('*all', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ message: 'API Route Not Found' });
   }
+  
+  if (process.env.VERCEL) {
+    // On Vercel, let Vercel handle the static path routing
+    return res.status(404).send('Not Found');
+  }
+  
   res.sendFile(path.join(buildPath, 'index.html'));
 });
 
