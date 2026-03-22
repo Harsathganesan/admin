@@ -16,10 +16,20 @@ const Settings = () => {
 
   useEffect(() => {
     const checkServer = async () => {
+      // Determine API URL (same logic as App.js)
+      const API_BASE = process.env.REACT_APP_API_URL || '';
+
       try {
-        const res = await fetch('/api/orders');
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/api/orders`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
         if (res.ok) {
           setServerStatus('Online');
+          setDbStatus('Connected');
+        } else if (res.status === 401 || res.status === 403) {
+          setServerStatus('Online (Auth Required)');
           setDbStatus('Connected');
         } else {
           setServerStatus('Issue Detected');

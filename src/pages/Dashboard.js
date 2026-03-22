@@ -204,7 +204,7 @@ const Dashboard = ({ orders = [] }) => {
           </div>
           <div style={{ width: '100%', height: 320, minWidth: '100px', minHeight: '100px', display: 'flex' }}>
             {mounted && chartData.length > 0 && (
-              <ResponsiveContainer width="100%" height="100%" debounce={1}>
+              <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData} margin={{ left: -20, right: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}} />
@@ -227,7 +227,7 @@ const Dashboard = ({ orders = [] }) => {
             </div>
             <div style={{ width: '100%', height: 350, minWidth: '100px', minHeight: '100px', display: 'flex' }}>
               {mounted && preferences.sizes.length > 0 && (
-                <ResponsiveContainer width="100%" height="100%" debounce={1}>
+                <ResponsiveContainer width="100%" height={350}>
                   <PieChart margin={{ left: 40, right: 40 }}> {/* Added lateral margins for mobile labels */}
                     <Pie 
                       activeIndex={activeSize}
@@ -257,7 +257,7 @@ const Dashboard = ({ orders = [] }) => {
             </div>
             <div style={{ width: '100%', height: 350, minWidth: '100px', minHeight: '100px', display: 'flex' }}>
               {mounted && preferences.types.length > 0 && (
-                <ResponsiveContainer width="100%" height="100%" debounce={1}>
+                <ResponsiveContainer width="100%" height={350}>
                   <PieChart margin={{ left: 40, right: 40 }}> {/* Added lateral margins for mobile labels */}
                     <Pie 
                       activeIndex={activeType}

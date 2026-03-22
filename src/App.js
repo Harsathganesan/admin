@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { io } from 'socket.io-client'; // Add socket.io-client
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
@@ -11,50 +10,51 @@ import Login from './pages/Login';
 import Settings from './pages/Settings';
 import './styles/index.css';
 
-// Initialize Socket.io (Dynamic URL for mobile access)
-// Initialize Socket.io (Dynamic URL for local and production)
-// Initialize Socket.io (Dynamic URL for local and production)
-// Initialize Socket.io (Point to port 5005 if in development, otherwise same origin)
-const SOCKET_URL = window.location.port && window.location.port !== '5005'
-  ? `${window.location.protocol}//${window.location.hostname}:5005`
-  : window.location.origin;
-
-const socket = io(SOCKET_URL, {
-  path: '/socket.io/',
-  transports: ['polling', 'websocket'] // Vercel prefers polling initially
-});
+// Use relative /api for production on Vercel, or proxy in dev
+const API_BASE = process.env.REACT_APP_API_URL || '';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem('isAuthenticated') === 'true'
+    localStorage.getItem('isAuthenticated') === 'true' && !!localStorage.getItem('token')
   );
   const [orders, setOrders] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    localStorage.getItem('isAuthenticated') === 'true' && !!localStorage.getItem('token')
+  );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('token');
+  };
 
   // Fetch initial orders and feedbacks from MongoDB
   const fetchData = async () => {
     try {
-      setLoading(true);
-      console.log('Fetching initial data...');
-      
       const token = localStorage.getItem('token');
+      if (!token) return;
+
       const [ordersRes, fbRes] = await Promise.all([
-        fetch(`${SOCKET_URL}/api/orders`, {
+        fetch(`${API_BASE}/api/orders`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch(`${SOCKET_URL}/api/feedbacks`, {
+        fetch(`${API_BASE}/api/feedbacks`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
+
+      if (ordersRes.status === 401 || ordersRes.status === 403 || fbRes.status === 401 || fbRes.status === 403) {
+        handleLogout();
+        return;
+      }
 
       const ordersData = await ordersRes.json();
       const fbData = await fbRes.json();
 
       setOrders(Array.isArray(ordersData) ? ordersData : []);
       setFeedbacks(Array.isArray(fbData) ? fbData : []);
-
       setLoading(false);
     } catch (error) {
       console.error('Network Error fetching data:', error);
@@ -66,33 +66,13 @@ function App() {
     if (isAuthenticated) {
       fetchData();
 
-      // SETUP SOCKET LISTENERS for real-time updates
-      socket.on('connect', () => {
-        console.log('Connected to real-time server');
-      });
+      // Implement Polling since Sockets are not supported on Vercel Serverless
+      const pollInterval = setInterval(() => {
+        fetchData();
+      }, 30000); // Poll every 30 seconds
 
-      socket.on('ordersUpdated', (updatedOrders) => {
-        console.log('REAL-TIME UPDATE: Orders updated!', updatedOrders);
-        setOrders(updatedOrders);
-      });
-
-      socket.on('feedbacksUpdated', (updatedFeedbacks) => {
-        console.log('REAL-TIME UPDATE: Feedbacks updated!', updatedFeedbacks);
-        setFeedbacks(updatedFeedbacks);
-      });
-
-      socket.on('disconnect', () => {
-        console.log('Disconnected from real-time server');
-      });
+      return () => clearInterval(pollInterval);
     }
-
-    // Cleanup on unmount
-    return () => {
-      socket.off('ordersUpdated');
-      socket.off('feedbacksUpdated');
-      socket.off('connect');
-      socket.off('disconnect');
-    };
   }, [isAuthenticated]);
 
   const sendWhatsAppMessage = (order, status) => {
@@ -120,7 +100,7 @@ function App() {
   const handleUpdateStatus = async (id, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${SOCKET_URL}/api/orders/${id}`, {
+      const response = await fetch(`${API_BASE}/api/orders/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -129,13 +109,14 @@ function App() {
         body: JSON.stringify({ status: newStatus }),
       });
 
+      if (response.status === 401 || response.status === 403) {
+        handleLogout();
+        return;
+      }
+
       if (response.ok) {
         const updatedOrder = await response.json();
-        // Local state will be updated automatically via socket emit from backend
-        // but we can also update it manually for immediate feedback if needed
-        // For now, Change Stream will handle it.
-        
-        // Send WhatsApp message to customer
+        // ...
         sendWhatsAppMessage(updatedOrder, newStatus);
       }
     } catch (error) {
@@ -143,26 +124,36 @@ function App() {
     }
   };
 
-  if (loading) {
+  if (!isAuthenticated) {
+    return <Login onLogin={(auth) => { 
+      setIsAuthenticated(auth);
+      setLoading(true); // Ensure loading is true when logging in to fetch data
+    }} />;
+  }
+
+  if (loading && isAuthenticated) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a' }}>
         <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: '#6366f1' }}>Loading...</h2>
-          <p>Connecting to MongoDB Atlas Live</p>
+          <div className="loading-spinner" style={{ 
+            width: '50px', 
+            height: '50px', 
+            border: '4px solid rgba(99, 102, 241, 0.1)', 
+            borderTop: '4px solid #6366f1', 
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px'
+          }}></div>
+          <style>{`
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          `}</style>
+          <h2 style={{ color: '#6366f1', marginBottom: '8px' }}>Loading Dashboard...</h2>
+          <p style={{ color: '#94a3b8' }}>Connecting to MongoDB Atlas Live</p>
         </div>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    return <Login onLogin={setIsAuthenticated} />;
-  }
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('token');
-  };
 
   return (
     <Router>

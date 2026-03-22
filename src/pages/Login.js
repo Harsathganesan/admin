@@ -11,9 +11,7 @@ const Login = ({ onLogin }) => {
     setError('');
 
     // Determine API URL (same logic as App.js)
-    const API_BASE = window.location.port && window.location.port !== '5005'
-      ? `${window.location.protocol}//${window.location.hostname}:5005`
-      : window.location.origin;
+    const API_BASE = process.env.REACT_APP_API_URL || '';
 
     try {
       const response = await fetch(`${API_BASE}/api/login`, {

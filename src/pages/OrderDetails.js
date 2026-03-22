@@ -36,8 +36,7 @@ const OrderDetails = ({ orders, onUpdateStatus }) => {
     const filename = `${order.customerName}_reference.jpg`.replace(/\s+/g, '_');
     
     try {
-      const backendUrl = window.location.origin;
-      const downloadUrl = `${backendUrl}/api/download-image?fullUrl=${encodeURIComponent(imageUrl)}&downloadName=${encodeURIComponent(filename)}`;
+      const downloadUrl = `/api/download-image?fullUrl=${encodeURIComponent(imageUrl)}&downloadName=${encodeURIComponent(filename)}`;
       
       const link = document.createElement('a');
       link.href = downloadUrl;
