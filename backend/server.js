@@ -61,27 +61,23 @@ const mongooseOptions = {
   socketTimeoutMS: 45000
 };
 
-// MongoDB Connection
-const connectDB = async () => {
+// MongoDB Connection Helper (Non-blocking)
+const ensureDb = async () => {
+  if (mongoose.connection.readyState >= 1) return;
+  if (!process.env.MONGODB_URI) {
+    console.warn('⚠️ MONGODB_URI is missing - Database-dependent features will fail');
+    return;
+  }
   try {
-    if (!process.env.MONGODB_URI) {
-        console.error('❌ MONGODB_URI is MISSING!');
-        return;
-    }
-    if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
-      console.log('✅ Connected to MongoDB');
-    }
+    await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
+    console.log('✅ Connected to MongoDB');
   } catch (err) {
-    console.error(`❌ MongoDB Connection Error:`, err.message);
+    console.error('❌ MongoDB Connection Error:', err.message);
   }
 };
 
-// Connection Helper Middleware for Serverless
-app.use(async (req, res, next) => {
-    await connectDB();
-    next();
-});
+// Initiate connection in background, but don't block process
+ensureDb().catch(console.error);
 
 // Authentication Middleware
 const authenticateToken = (req, res, next) => {
@@ -118,17 +114,26 @@ app.post(['/api/login', '/login'], (req, res) => {
 });
 
 app.get(['/api/orders', '/orders'], authenticateToken, async (req, res) => {
-    try { res.json(await Order.find().sort({ orderDate: -1 })); }
+    try { 
+        await ensureDb(); 
+        res.json(await Order.find().sort({ orderDate: -1 })); 
+    }
     catch (err) { res.status(500).json({ message: err.message }); }
 });
 
 app.get(['/api/feedbacks', '/feedbacks'], authenticateToken, async (req, res) => {
-    try { res.json(await Feedback.find().sort({ date: -1 })); }
+    try { 
+        await ensureDb(); 
+        res.json(await Feedback.find().sort({ date: -1 })); 
+    }
     catch (err) { res.status(500).json({ message: err.message }); }
 });
 
 app.patch(['/api/orders/:id', '/orders/:id'], authenticateToken, async (req, res) => {
-    try { res.json(await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })); }
+    try { 
+        await ensureDb(); 
+        res.json(await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })); 
+    }
     catch (err) { res.status(400).json({ message: err.message }); }
 });
 
@@ -139,7 +144,13 @@ app.get(['/api/download-image', '/download-image'], async (req, res) => {
 
         if (fullUrl) {
             const response = await fetch(fullUrl);
-            if (!response.ok) return res.status(404).send('Remote file not found');
+            // Original check: if (!response.ok) return res.status(404).send('Remote file not found');
+            // The provided "Code Edit" snippet for this section was syntactically incorrect and
+            // contained frontend-specific logic (setError, response.json for image).
+            // Reverting to the original correct backend logic for image download.
+            if (!response.ok) {
+                return res.status(404).send('Remote file not found');
+            }
             const blob = await response.blob();
             const buffer = Buffer.from(await blob.arrayBuffer());
             res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);

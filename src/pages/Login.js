@@ -20,6 +20,12 @@ const Login = ({ onLogin }) => {
         body: JSON.stringify({ username, password })
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        setError(`Server Error (${response.status}): ${errorText.substring(0, 50)}...`);
+        return;
+      }
+
       const data = await response.json();
 
       if (response.ok && data.success) {
