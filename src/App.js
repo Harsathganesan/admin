@@ -24,11 +24,11 @@ function App() {
   );
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setIsAuthenticated(false);
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('token');
-  };
+  }, []);
 
   // Fetch initial orders and feedbacks from MongoDB
   const fetchData = useCallback(async () => {
@@ -60,7 +60,7 @@ function App() {
       console.error('Network Error fetching data:', error);
       setLoading(false);
     }
-  }, [isAuthenticated]); // Re-create if auth changes
+  }, [handleLogout]); 
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -75,7 +75,7 @@ function App() {
     }
   }, [isAuthenticated, fetchData]);
 
-  const sendWhatsAppMessage = (order, status) => {
+  const sendWhatsAppMessage = useCallback((order, status) => {
     // Get phone number from order
     let phone = order.customerPhone || '';
     // Remove spaces, dashes, brackets, and + sign
@@ -95,9 +95,9 @@ function App() {
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
-  };
+  }, []);
 
-  const handleUpdateStatus = async (id, newStatus) => {
+  const handleUpdateStatus = useCallback(async (id, newStatus) => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE}/api/orders/${id}`, {
@@ -122,7 +122,7 @@ function App() {
     } catch (error) {
       console.error('Error updating status:', error);
     }
-  };
+  }, [handleLogout, sendWhatsAppMessage]);
 
   if (!isAuthenticated) {
     return <Login onLogin={(auth) => { 
