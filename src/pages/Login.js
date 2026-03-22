@@ -30,7 +30,7 @@ const Login = ({ onLogin }) => {
         setError(data.message || 'Invalid username or password');
       }
     } catch (err) {
-      setError('Connection error. Please check your backend.');
+      setError(`Login Error: ${err.message || 'Connection failed'}. Check Vercel logs and Environment Variables.`);
     }
   };
 

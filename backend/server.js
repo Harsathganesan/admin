@@ -97,51 +97,59 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Routes
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === 'harsatharts9' && password === 'admin123') {
-    const token = jwt.sign({ username }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '24h' });
-    return res.json({ success: true, token });
-  }
-  res.status(401).json({ success: false, message: 'Invalid credentials' });
+// DB Stats & Ping Route
+app.get(['/api/ping', '/ping'], (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    vercel: !!process.env.VERCEL,
+    db_state: mongoose.connection.readyState 
+  });
 });
 
-app.get('/api/orders', authenticateToken, async (req, res) => {
-  try { res.json(await Order.find().sort({ createdAt: -1 })); }
-  catch (err) { res.status(500).json({ message: err.message }); }
-});
-
-app.get('/api/feedbacks', authenticateToken, async (req, res) => {
-  try { res.json(await Feedback.find().sort({ createdAt: -1 })); }
-  catch (err) { res.status(500).json({ message: err.message }); }
-});
-
-app.patch('/api/orders/:id', authenticateToken, async (req, res) => {
-  try { res.json(await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })); }
-  catch (err) { res.status(400).json({ message: err.message }); }
-});
-
-app.get('/api/download-image', async (req, res) => {
-  try {
-    const fullUrl = req.query.fullUrl;
-    const downloadName = req.query.downloadName || 'download.jpg';
-
-    if (fullUrl) {
-      const response = await fetch(fullUrl);
-      if (!response.ok) return res.status(404).send('Remote file not found');
-      
-      const blob = await response.blob();
-      const buffer = Buffer.from(await blob.arrayBuffer());
-      
-      res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);
-      res.setHeader('Content-Type', 'image/jpeg');
-      return res.send(buffer);
+// Routes - Array matching for Vercel/Local compatibility
+app.post(['/api/login', '/login'], (req, res) => {
+    const { username, password } = req.body;
+    if (username === 'harsatharts9' && password === 'admin123') {
+        const token = jwt.sign({ username }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '24h' });
+        res.json({ success: true, token });
+    } else {
+        res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
-    res.status(400).send('Url missing');
-  } catch (err) {
-    res.status(500).send('Download error');
-  }
+});
+
+app.get(['/api/orders', '/orders'], authenticateToken, async (req, res) => {
+    try { res.json(await Order.find().sort({ orderDate: -1 })); }
+    catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.get(['/api/feedbacks', '/feedbacks'], authenticateToken, async (req, res) => {
+    try { res.json(await Feedback.find().sort({ date: -1 })); }
+    catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+app.patch(['/api/orders/:id', '/orders/:id'], authenticateToken, async (req, res) => {
+    try { res.json(await Order.findByIdAndUpdate(req.params.id, req.body, { new: true })); }
+    catch (err) { res.status(400).json({ message: err.message }); }
+});
+
+app.get(['/api/download-image', '/download-image'], async (req, res) => {
+    try {
+        const fullUrl = req.query.fullUrl;
+        const downloadName = req.query.downloadName || 'download.jpg';
+
+        if (fullUrl) {
+            const response = await fetch(fullUrl);
+            if (!response.ok) return res.status(404).send('Remote file not found');
+            const blob = await response.blob();
+            const buffer = Buffer.from(await blob.arrayBuffer());
+            res.setHeader('Content-Disposition', `attachment; filename="${downloadName}"`);
+            res.setHeader('Content-Type', 'image/jpeg');
+            return res.send(buffer);
+        }
+        res.status(400).send('Url missing');
+    } catch (err) {
+        res.status(500).send('Download error');
+    }
 });
 
 // Serve frontend static files
@@ -152,14 +160,22 @@ if (!process.env.VERCEL) {
 
 // Catch-all route
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/')) return res.status(404).json({ message: 'API Not Found' });
-  if (!process.env.VERCEL) res.sendFile(path.join(buildPath, 'index.html'));
-  else res.status(404).send('Not Found');
+    // Return 404 JSON for any unmatched API calls
+    if (req.path.startsWith('/api/') || req.headers.accept?.includes('application/json')) {
+        return res.status(404).json({ message: 'API Route Not Found' });
+    }
+    
+    // Server static frontend only if not on Vercel
+    if (!process.env.VERCEL) {
+        res.sendFile(path.join(buildPath, 'index.html'));
+    } else {
+        res.status(404).json({ message: 'Page not found on Vercel handler' });
+    }
 });
 
 // Start server locally
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 module.exports = app;
