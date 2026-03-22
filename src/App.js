@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
@@ -31,7 +31,7 @@ function App() {
   };
 
   // Fetch initial orders and feedbacks from MongoDB
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -60,7 +60,7 @@ function App() {
       console.error('Network Error fetching data:', error);
       setLoading(false);
     }
-  };
+  }, [isAuthenticated]); // Re-create if auth changes
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -73,7 +73,7 @@ function App() {
 
       return () => clearInterval(pollInterval);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchData]);
 
   const sendWhatsAppMessage = (order, status) => {
     // Get phone number from order
