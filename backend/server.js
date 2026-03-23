@@ -170,7 +170,7 @@ if (!process.env.VERCEL) {
 }
 
 // Catch-all route
-app.get('*', (req, res) => {
+app.get('/{*path}', (req, res) => {
     // Return 404 JSON for any unmatched API calls
     if (req.path.startsWith('/api/') || req.headers.accept?.includes('application/json')) {
         return res.status(404).json({ message: 'API Route Not Found' });
