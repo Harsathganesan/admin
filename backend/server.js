@@ -13,6 +13,12 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', cors(), express.static(path.join(__dirname, 'uploads')));
 
+// Simple request logger
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
+
 // Ensure uploads directory exists (Only if NOT on Vercel)
 const fs = require('fs');
 if (!process.env.VERCEL) {
@@ -118,16 +124,25 @@ app.get(['/api/orders', '/orders'], authenticateToken, async (req, res) => {
         await ensureDb(); 
         res.json(await Order.find().sort({ orderDate: -1 })); 
     }
-    catch (err) { res.status(500).json({ message: err.message }); }
+    catch (err) { 
+        console.error('❌ GET Orders Error:', err);
+        res.status(500).json({ message: err.message }); 
+    }
 });
 
 app.get(['/api/feedbacks', '/feedbacks'], authenticateToken, async (req, res) => {
     try { 
         await ensureDb(); 
-        res.json(await Feedback.find().sort({ date: -1 })); 
+        res.json(await Feedback.find().sort({ createdAt: -1 })); 
     }
-    catch (err) { res.status(500).json({ message: err.message }); }
+    catch (err) { 
+        console.error('❌ GET Feedbacks Error:', err);
+        res.status(500).json({ message: err.message }); 
+    }
 });
+
+// Logging middleware was moved to top
+
 
 app.patch(['/api/orders/:id', '/orders/:id'], authenticateToken, async (req, res) => {
     try { 
