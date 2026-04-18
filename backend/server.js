@@ -69,17 +69,12 @@ const mongooseOptions = {
 
 // MongoDB Connection Helper (Non-blocking)
 const ensureDb = async () => {
-  if (mongoose.connection.readyState >= 1) return;
-  if (!process.env.MONGODB_URI) {
-    console.warn('⚠️ MONGODB_URI is missing - Database-dependent features will fail');
-    return;
-  }
-  try {
+    if (mongoose.connection.readyState >= 1) return;
+    if (!process.env.MONGODB_URI) {
+        throw new Error('MONGODB_URI is missing');
+    }
     await mongoose.connect(process.env.MONGODB_URI, mongooseOptions);
     console.log('✅ Connected to MongoDB');
-  } catch (err) {
-    console.error('❌ MongoDB Connection Error:', err.message);
-  }
 };
 
 // Initiate connection in background, but don't block process
@@ -141,6 +136,33 @@ app.get(['/api/feedbacks', '/feedbacks'], authenticateToken, async (req, res) =>
     }
 });
 
+app.post(['/api/orders', '/orders'], async (req, res) => {
+    try {
+        await ensureDb();
+        const newOrder = new Order(req.body);
+        if (!newOrder.orderNumber) {
+            newOrder.orderNumber = 'ORD-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        }
+        const savedOrder = await newOrder.save();
+        res.status(201).json(savedOrder);
+    } catch (err) {
+        console.error('❌ POST Order Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+app.post(['/api/feedbacks', '/feedbacks'], async (req, res) => {
+    try {
+        await ensureDb();
+        const newFeedback = new Feedback(req.body);
+        const savedFeedback = await newFeedback.save();
+        res.status(201).json(savedFeedback);
+    } catch (err) {
+        console.error('❌ POST Feedback Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Logging middleware was moved to top
 
 
@@ -184,8 +206,10 @@ if (!process.env.VERCEL) {
   app.use(express.static(buildPath));
 }
 
-// Catch-all route
-app.get('/{*path}', (req, res) => {
+// Catch-all route for any unmatched requests
+app.use((req, res, next) => {
+    if (req.method !== 'GET') return next();
+    
     // Return 404 JSON for any unmatched API calls
     if (req.path.startsWith('/api/') || req.headers.accept?.includes('application/json')) {
         return res.status(404).json({ message: 'API Route Not Found' });
