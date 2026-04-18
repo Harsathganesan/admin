@@ -69,7 +69,7 @@ function App() {
       // Implement Polling since Sockets are not supported on Vercel Serverless
       const pollInterval = setInterval(() => {
         fetchData();
-      }, 30000); // Poll every 30 seconds
+      }, 3000); // Poll every 3 seconds for almost instant updates
 
       return () => clearInterval(pollInterval);
     }
