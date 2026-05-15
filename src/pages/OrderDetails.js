@@ -36,6 +36,17 @@ const OrderDetails = ({ orders, onUpdateStatus }) => {
     const filename = `${order.customerName}_reference.jpg`.replace(/\s+/g, '_');
     
     try {
+      // If it's a base64 data URL, download it directly
+      if (imageUrl.startsWith('data:')) {
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
       const downloadUrl = `/api/download-image?fullUrl=${encodeURIComponent(imageUrl)}&downloadName=${encodeURIComponent(filename)}`;
       
       const link = document.createElement('a');
