@@ -87,9 +87,9 @@ function App() {
 
     let message = '';
     if (status === 'Accepted') {
-      message = `✅ வணக்கம் ${order.customerName}! உங்கள் Drawing Order Accept ஆகிவிட்டது! 🎨\n\nOrder ID: ${order.orderNumber || order._id.slice(-8).toUpperCase()}\nDrawing Type: ${order.drawingType}\nSize: ${order.size}\nPrice: ₹${order.price}\n\nநாங்கள் விரைவில் உங்களை தொடர்பு கொள்கிறோம். நன்றி! 🙏`;
+      message = `Thank you for contacting HarsathArts9! 🎨\n\nwelcome ${order.customerName},\n\nYour drawing request has been successfully accepted.\n\n🆔 Order ID: ${order.orderNumber || order._id.slice(-8).toUpperCase()}\nDrawing Type: ${order.drawingType}\nSize: ${order.size}\nPrice: ₹${order.price}\n\n✨ Your order will be completed and updated as soon as possible.\nThank you for choosing Harsatharts9!`;
     } else if (status === 'Declined') {
-      message = `❌ வணக்கம் ${order.customerName}, மன்னிக்கவும்!\n\nதற்போது உங்கள் Drawing Order-ஐ Decline செய்திருக்கிறோம்.\n\nOrder ID: ${order.orderNumber || order._id.slice(-8).toUpperCase()}\n\nஏதேனும் ஐயங்கள் இருந்தால் தொடர்பு கொள்ளுங்கள். நன்றி!`;
+      message = `Thank you for contacting HarsathArts9! 🎨\n\nHello ${order.customerName},\n\nWe’re sorry, currently we are not accepting drawing orders due to inconvenience at the moment.\n\nPlease feel free to contact us again in the future if needed`;
     }
 
     const encodedMessage = encodeURIComponent(message);
