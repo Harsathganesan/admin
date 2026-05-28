@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const jwt = require('jsonwebtoken');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
+const { sendOrderNotification } = require('./emailService');
 
 const app = express();
 const PORT = process.env.PORT || 5005;
@@ -112,6 +113,11 @@ app.post(['/api/orders', '/orders'], async (req, res) => {
         const newOrder = new Order(req.body);
         const savedOrder = await newOrder.save();
         res.status(201).json(savedOrder);
+        
+        // Asynchronously trigger email notification without blocking response
+        sendOrderNotification(savedOrder).catch(err => {
+            console.error('❌ Background Email Notification Error:', err);
+        });
     } catch (err) {
         console.error('❌ POST Order Error:', err);
         res.status(400).json({ message: err.message });
