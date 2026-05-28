@@ -56,7 +56,7 @@ const sendOrderNotification = async (order) => {
         const mailOptions = {
             from: `"HarsathArts9 🎨" <${process.env.SMTP_USER}>`,
             to: adminEmail,
-            subject: `🎨 New Order Placed! [Order #${order.orderNumber || order._id.toString().slice(-8).toUpperCase()}]`,
+            subject: `🎨 New Order Received! [Order #${order.orderNumber || order._id.toString().slice(-8).toUpperCase()}]`,
             html: `
 <!DOCTYPE html>
 <html lang="en">

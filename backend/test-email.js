@@ -41,7 +41,8 @@ const runTest = async () => {
     console.log(`📧 Attempting to send test notification email...`);
     console.log(`   From: ${smtpUser}`);
     console.log(`   To: ${process.env.ADMIN_EMAIL || 'harsatharts2005@gmail.com'}`);
-    console.log(`   Dashboard Link Target: ${process.env.DASHBOARD_URL || 'http://localhost:3000'}/orders/${mockOrder._id}`);
+    const dashboardBaseUrl = process.env.DASHBOARD_URL || 'http://localhost:3000';
+    console.log(`   Dashboard Link Target: ${dashboardBaseUrl.replace(/\/$/, '')}/orders/${mockOrder._id}`);
     console.log('--------------------------------------------------');
 
     try {
