@@ -112,12 +112,16 @@ app.post(['/api/orders', '/orders'], async (req, res) => {
         console.log(`📦 New Order Request: ${JSON.stringify(req.body).length} bytes`);
         const newOrder = new Order(req.body);
         const savedOrder = await newOrder.save();
-        res.status(201).json(savedOrder);
         
-        // Asynchronously trigger email notification without blocking response
-        sendOrderNotification(savedOrder).catch(err => {
-            console.error('❌ Background Email Notification Error:', err);
-        });
+        // Wait for email notification to complete on Vercel before ending request
+        // to prevent Vercel Serverless environment from freezing the process
+        try {
+            await sendOrderNotification(savedOrder);
+        } catch (mailErr) {
+            console.error('❌ Email Notification Error:', mailErr);
+        }
+        
+        res.status(201).json(savedOrder);
     } catch (err) {
         console.error('❌ POST Order Error:', err);
         res.status(400).json({ message: err.message });
