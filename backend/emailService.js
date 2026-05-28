@@ -52,6 +52,11 @@ const sendOrderNotification = async (order) => {
             from: `"HarsathArts9 🎨" <${process.env.SMTP_USER}>`,
             to: adminEmail,
             subject: `🎨 New Drawing Order Received! [Order #${order.orderNumber || order._id.toString().slice(-8).toUpperCase()}]`,
+            headers: {
+                'Precedence': 'bulk',
+                'X-Auto-Response-Suppress': 'All',
+                'Auto-Submitted': 'auto-generated'
+            },
             html: `
 <!DOCTYPE html>
 <html lang="en">
