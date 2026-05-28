@@ -158,7 +158,13 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <Sidebar onLogout={handleLogout} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+        <Sidebar 
+          onLogout={handleLogout} 
+          mobileMenuOpen={mobileMenuOpen} 
+          setMobileMenuOpen={setMobileMenuOpen} 
+          orders={orders}
+          feedbacks={feedbacks}
+        />
         <div className="main-content">
           <Navbar onLogout={handleLogout} toggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)} />
           <div className="page-content">
