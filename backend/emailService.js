@@ -48,22 +48,17 @@ const sendOrderNotification = async (order) => {
         // Link directly to the order details page using the MongoDB ObjectId
         const orderLink = `${dashboardBaseUrl.replace(/\/$/, '')}/orders/${order._id}`;
 
-        // Format price nicely
-        const formattedPrice = typeof order.price === 'number' 
-            ? `₹${order.price.toLocaleString('en-IN')}` 
-            : `₹${order.price || 'N/A'}`;
-
         const mailOptions = {
             from: `"HarsathArts9 🎨" <${process.env.SMTP_USER}>`,
             to: adminEmail,
-            subject: `🎨 New Order Received! [Order #${order.orderNumber || order._id.toString().slice(-8).toUpperCase()}]`,
+            subject: `🎨 New Drawing Order Received! [Order #${order.orderNumber || order._id.toString().slice(-8).toUpperCase()}]`,
             html: `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Order Placed!</title>
+    <title>New Order Received</title>
     <style>
         body {
             margin: 0;
@@ -81,7 +76,7 @@ const sendOrderNotification = async (order) => {
         }
         .header {
             text-align: center;
-            padding-bottom: 30px;
+            padding-bottom: 25px;
         }
         .logo-text {
             font-size: 28px;
@@ -102,80 +97,47 @@ const sendOrderNotification = async (order) => {
             background-color: #1e293b;
             border-radius: 16px;
             border: 1px solid #334155;
-            padding: 30px;
+            padding: 35px 30px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-        }
-        .banner {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            border-radius: 12px;
-            padding: 20px;
             text-align: center;
+        }
+        .banner-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .title {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+            color: #f1f5f9;
+            font-weight: 700;
+        }
+        .message {
+            font-size: 15px;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .order-id {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #a855f7;
+            display: inline-block;
+            margin-top: 5px;
             margin-bottom: 25px;
         }
-        .banner h1 {
-            margin: 0;
-            font-size: 20px;
-            color: #f1f5f9;
-            font-weight: 700;
-        }
-        .banner p {
-            margin: 8px 0 0 0;
-            font-size: 14px;
-            color: #cbd5e1;
-        }
-        .section-title {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #6366f1;
-            margin-top: 25px;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 6px;
-        }
-        .grid {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .grid td {
-            padding: 10px 0;
-            vertical-align: top;
-        }
-        .label {
-            color: #94a3b8;
-            font-size: 14px;
-            width: 35%;
-            font-weight: 500;
-        }
-        .value {
-            color: #f1f5f9;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: right;
-        }
-        .instructions-box {
-            background-color: #0f172a;
-            border-left: 4px solid #a855f7;
-            border-radius: 4px;
-            padding: 12px 16px;
-            font-size: 14px;
-            color: #cbd5e1;
-            margin-top: 10px;
-            line-height: 1.5;
-            font-style: italic;
-        }
         .cta-container {
-            text-align: center;
-            margin-top: 35px;
-            margin-bottom: 15px;
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
         .btn {
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             color: #ffffff !important;
             text-decoration: none;
-            padding: 14px 32px;
+            padding: 14px 36px;
             font-size: 15px;
             font-weight: 700;
             border-radius: 9999px;
@@ -189,10 +151,6 @@ const sendOrderNotification = async (order) => {
             font-size: 12px;
             color: #64748b;
         }
-        .footer a {
-            color: #94a3b8;
-            text-decoration: none;
-        }
     </style>
 </head>
 <body>
@@ -203,57 +161,13 @@ const sendOrderNotification = async (order) => {
         </div>
         
         <div class="card">
-            <div class="banner">
-                <h1>🎉 New Drawing Request Received!</h1>
-                <p>Order ID: <strong>#${order.orderNumber || order._id.toString().slice(-8).toUpperCase()}</strong></p>
+            <div class="banner-icon">🎨</div>
+            <h1 class="title">New Drawing Order Received!</h1>
+            <p class="message">A new drawing request has been placed on your platform. Click below to view the order specifications, reference images, and customer details on your dashboard.</p>
+            
+            <div>
+                <span class="order-id">ID: #${order.orderNumber || order._id.toString().slice(-8).toUpperCase()}</span>
             </div>
-
-            <div class="section-title">Customer Details</div>
-            <table class="grid">
-                <tr>
-                    <td class="label">Customer Name</td>
-                    <td class="value">${order.customerName || 'N/A'}</td>
-                </tr>
-                <tr>
-                    <td class="label">Email Address</td>
-                    <td class="value">${order.customerEmail || 'N/A'}</td>
-                </tr>
-                <tr>
-                    <td class="label">Phone Number</td>
-                    <td class="value">${order.customerPhone || 'N/A'}</td>
-                </tr>
-            </table>
-
-            <div class="section-title">Order Specifications</div>
-            <table class="grid">
-                <tr>
-                    <td class="label">Drawing Type</td>
-                    <td class="value">${order.drawingType || 'N/A'}</td>
-                </tr>
-                <tr>
-                    <td class="label">Canvas Size</td>
-                    <td class="value">${order.size || 'N/A'}</td>
-                </tr>
-                <tr>
-                    <td class="label">Total Price</td>
-                    <td class="value" style="color: #10b981; font-size: 16px; font-weight: 700;">${formattedPrice}</td>
-                </tr>
-                <tr>
-                    <td class="label">Payment Method</td>
-                    <td class="value">${order.paymentMethod || 'N/A'}</td>
-                </tr>
-                <tr>
-                    <td class="label">Expected Delivery</td>
-                    <td class="value">${order.deliveryDate || 'N/A'}</td>
-                </tr>
-            </table>
-
-            ${order.specialInstructions ? `
-                <div class="section-title">Special Instructions</div>
-                <div class="instructions-box">
-                    "${order.specialInstructions}"
-                </div>
-            ` : ''}
 
             <div class="cta-container">
                 <a href="${orderLink}" class="btn" target="_blank">Open Dashboard</a>
